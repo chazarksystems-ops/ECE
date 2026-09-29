@@ -1,0 +1,24 @@
+# M2 target: Field Life 2D + MaCE.
+
+[simulation]
+dt = 0.02
+world = [1.0, 1.0]
+seed = 3
+rules = ["field_life"]
+
+[species]
+count = 4
+matrix = "random"
+range = [-1.0, 1.0]
+
+[field]
+dims = [128, 128]
+channels = 4
+strength = 1.0
+crowding_lambda = 0.1
+transport_beta = 4.0
+kernel = "ring"
+
+[io]
+headless = true
+frames = 400

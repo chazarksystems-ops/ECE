@@ -1,0 +1,29 @@
+# M1 default: Mohr, 6 species, unit torus.
+
+[simulation]
+dt = 0.01
+world = [1.0, 1.0]
+seed = 1
+rules = ["mohr"]
+
+[species]
+count = 6
+matrix = "random"
+range = [-1.0, 1.0]
+
+[mohr]
+particles = 4096
+r_max = 0.08
+beta = 0.3
+gain = 1.0
+lambda = 6.321205588285577
+
+[hash]
+cell = 0.08
+grid = [12, 12]
+neighborhood = 3
+
+[io]
+headless = true
+frames = 1000
+hash_every = 0

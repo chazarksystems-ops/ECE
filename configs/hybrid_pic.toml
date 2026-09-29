@@ -1,0 +1,33 @@
+# M4 sketch. Not runnable as a full PIC loop yet.
+# Declares both substrates so the loader can reject incomplete builds.
+
+[simulation]
+dt = 0.01
+world = [1.0, 1.0]
+seed = 5
+rules = ["mohr", "field_life"]
+
+[species]
+count = 4
+matrix = "random"
+range = [-1.0, 1.0]
+
+[mohr]
+particles = 1024
+r_max = 0.08
+beta = 0.3
+gain = 1.0
+lambda = 6.321205588285577
+
+[field]
+dims = [128, 128]
+channels = 4
+strength = 1.0
+crowding_lambda = 0.1
+transport_beta = 4.0
+kernel = "ring"
+
+[hash]
+cell = 0.08
+grid = [12, 12]
+neighborhood = 3

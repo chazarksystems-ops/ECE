@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arcsystems.local/ece/sim.schema.json",
+  "title": "ECE simulation config",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["simulation", "species"],
+  "properties": {
+    "simulation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dt", "world", "seed"],
+      "properties": {
+        "dt": { "type": "number", "exclusiveMinimum": 0 },
+        "world": {
+          "type": "array",
+          "items": { "type": "number", "exclusiveMinimum": 0 },
+          "minItems": 2,
+          "maxItems": 3
+        },
+        "seed": { "type": "integer", "minimum": 0 },
+        "rules": {
+          "type": "array",
+          "items": { "enum": ["mohr", "field_life", "lenia", "particle_lenia", "pps"] }
+        }
+      }
+    },
+    "species": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["count"],
+      "properties": {
+        "count": { "type": "integer", "minimum": 1, "maximum": 128 },
+        "matrix": { "enum": ["random", "identity", "chase", "path"] },
+        "range": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "matrix_path": { "type": "string" }
+      }
+    },
+    "mohr": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "particles": { "type": "integer", "minimum": 0 },
+        "r_max": { "type": "number", "exclusiveMinimum": 0 },
+        "beta": { "type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1 },
+        "gain": { "type": "number", "exclusiveMinimum": 0 },
+        "lambda": { "type": "number", "minimum": 0 }
+      }
+    },
+    "field": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "dims": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 2 },
+          "minItems": 2,
+          "maxItems": 3
+        },
+        "channels": { "type": "integer", "minimum": 1 },
+        "strength": { "type": "number" },
+        "crowding_lambda": { "type": "number", "minimum": 0 },
+        "transport_beta": { "type": "number", "exclusiveMinimum": 0 },
+        "kernel": { "enum": ["ring", "gaussian", "disk"] }
+      }
+    },
+    "lenia": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "mu": { "type": "number" },
+        "sigma": { "type": "number", "exclusiveMinimum": 0 },
+        "dt": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "particle_lenia": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["particles", "kernel_mu", "kernel_sigma", "growth_mu", "growth_sigma", "c_rep"],
+      "properties": {
+        "particles": { "type": "integer", "minimum": 1 },
+        "kernel_mu": { "type": "number", "exclusiveMinimum": 0 },
+        "kernel_sigma": { "type": "number", "exclusiveMinimum": 0 },
+        "growth_mu": { "type": "number" },
+        "growth_sigma": { "type": "number", "exclusiveMinimum": 0 },
+        "c_rep": { "type": "number", "minimum": 0 },
+        "dt": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "hash": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "cell": { "type": "number", "exclusiveMinimum": 0 },
+        "grid": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 1 },
+          "minItems": 2,
+          "maxItems": 3
+        },
+        "neighborhood": { "enum": [3, 5] }
+      }
+    },
+    "io": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "headless": { "type": "boolean" },
+        "frames": { "type": "integer", "minimum": 1 },
+        "hash_every": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

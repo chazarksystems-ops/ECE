@@ -1,0 +1,25 @@
+# M3 target. Lenia growth from a deterministic annular seed; not a canonical Orbium pattern.
+
+[simulation]
+dt = 0.1
+world = [1.0, 1.0]
+seed = 4
+rules = ["lenia"]
+
+[species]
+count = 1
+matrix = "identity"
+
+[field]
+dims = [128, 128]
+channels = 1
+kernel = "ring"
+
+[lenia]
+mu = 0.15
+sigma = 0.015
+dt = 0.1
+
+[io]
+headless = true
+frames = 400

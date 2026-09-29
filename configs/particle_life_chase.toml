@@ -1,0 +1,28 @@
+# Cyclic pursuit. Good visual smoke test for asymmetry.
+
+[simulation]
+dt = 0.01
+world = [1.0, 1.0]
+seed = 2
+rules = ["mohr"]
+
+[species]
+count = 4
+matrix = "chase"
+range = [-1.0, 1.0]
+
+[mohr]
+particles = 2048
+r_max = 0.10
+beta = 0.3
+gain = 1.0
+lambda = 6.321205588285577
+
+[hash]
+cell = 0.10
+grid = [10, 10]
+neighborhood = 3
+
+[io]
+headless = true
+frames = 500

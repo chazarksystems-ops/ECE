@@ -1,0 +1,16 @@
+[project]
+name = "ece-kernels"
+version = "0.1.0"
+description = "Corrected reference kernels for the Entelechy Continuum Engine"
+requires-python = ">=3.11"
+dependencies = ["numpy>=1.26"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+cuda = ["numba>=0.61"]
+cuda-fft = ["cupy-cuda13x>=14.2"]
+webgpu = ["wgpu>=0.32", "PySide6>=6.6"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

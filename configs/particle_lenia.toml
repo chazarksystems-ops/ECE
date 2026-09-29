@@ -1,0 +1,23 @@
+# 2D periodic adaptation of the published Particle Lenia energy-gradient rule.
+
+[simulation]
+dt = 0.1
+world = [16.0, 16.0]
+seed = 20
+rules = ["particle_lenia"]
+
+[species]
+count = 1
+matrix = "identity"
+
+[particle_lenia]
+particles = 200
+kernel_mu = 4.0
+kernel_sigma = 1.0
+growth_mu = 0.6
+growth_sigma = 0.15
+c_rep = 1.0
+
+[io]
+headless = true
+frames = 1000
