@@ -202,12 +202,10 @@ def mohr_accelerations_cuda_binned(
         raise ValueError("grid must contain two positive dimensions")
     if r_max <= 0.0 or not 0.0 < beta < 1.0:
         raise ValueError("r_max must be positive and beta must be in (0, 1)")
-    if neighborhood not in (3, 5):
-        raise ValueError("neighborhood must be 3 or 5")
-    neighborhood_radius = neighborhood // 2
+    from .bins import validate_hash_grid
+
+    neighborhood_radius = validate_hash_grid(grid, neighborhood, world, r_max)
     bin_widths = world / np.asarray(grid, dtype=np.float32)
-    if np.any(bin_widths + 1e-7 < r_max / neighborhood_radius):
-        raise ValueError("world/grid cells are too small for the requested neighborhood")
     if len(pos) == 0:
         return np.zeros_like(pos, dtype=np.float64)
 
@@ -402,13 +400,10 @@ def run_cuda_resident(cfg: SimConfig, frames: int) -> MohrState:
     grid_x, grid_y = grid
     bins = grid_x * grid_y
     widths = np.asarray(cfg.world, dtype=np.float32) / np.asarray(grid, dtype=np.float32)
-    neighborhood = int(cfg.hash.get("neighborhood", 3))
-    if neighborhood not in (3, 5):
-        raise ValueError("hash neighborhood must be 3 or 5")
-    radius = neighborhood // 2
+    from .bins import validate_hash_grid
+
     r_max = float(cfg.mohr["r_max"])
-    if np.any(widths + 1e-7 < r_max / radius):
-        raise ValueError("world/grid cells are too small for the configured hash neighborhood")
+    radius = validate_hash_grid(grid, int(cfg.hash.get("neighborhood", 3)), cfg.world, r_max)
 
     d_pos = cuda.to_device(np.ascontiguousarray(state.pos, dtype=np.float32))
     d_vel = cuda.to_device(np.ascontiguousarray(state.vel, dtype=np.float32))

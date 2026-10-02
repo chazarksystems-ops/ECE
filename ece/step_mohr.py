@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from .bins import snapshot_and_scatter
+from .bins import snapshot_and_scatter, validate_hash_grid
 from .config import SimConfig
 from .integrate import symplectic_euler
 from .mohr import mohr_accelerations, mohr_force_scalar, wrapped_delta
@@ -45,47 +45,58 @@ def step(state: MohrState, cfg: SimConfig, use_bins: bool = True) -> MohrState:
     return MohrState(pos=pos, vel=vel, types=state.types, frame=state.frame + 1)
 
 
+_PAIR_CHUNK = 4096
+
+
 def _binned_accel(state: MohrState, cfg: SimConfig, r_max, beta, gain) -> np.ndarray:
-    cell = float(cfg.hash["cell"])
     grid = tuple(int(x) for x in cfg.hash["grid"])
-    tables = snapshot_and_scatter(state.pos, cell, grid, cfg.world)
-    n = len(state.pos)
-    accel = np.zeros_like(state.pos)
+    neighborhood = int(cfg.hash.get("neighborhood", 3))
+    radius = validate_hash_grid(grid, neighborhood, cfg.world, r_max)
+    tables = snapshot_and_scatter(state.pos, float(cfg.hash["cell"]), grid, cfg.world)
+    pos = state.pos
+    types = np.asarray(state.types, dtype=np.int64)
+    world = cfg.world
+    n = len(pos)
+    accel = np.zeros_like(pos)
+    if n == 0:
+        return accel
     gx, gy = grid
     ranges = tables["ranges"]
     order = tables["sorted_indices"]
-    pos = state.pos
-    types = state.types
-    world = cfg.world
-    bin_widths = world / np.asarray(grid, dtype=np.float64)
-    neighborhood_radius = int(cfg.hash.get("neighborhood", 3)) // 2
-    for i in range(n):
-        x = pos[i]
-        ti = int(types[i])
-        bx = int(np.floor(x[0] / bin_widths[0]) % gx)
-        by = int(np.floor(x[1] / bin_widths[1]) % gy)
-        acc = np.zeros(2)
-        for dy in range(-neighborhood_radius, neighborhood_radius + 1):
-            for dx in range(-neighborhood_radius, neighborhood_radius + 1):
-                nx = (bx + dx) % gx
-                ny = (by + dy) % gy
-                b = ny * gx + nx
-                lo, hi = ranges[b]
-                for s in range(lo, hi):
-                    j = int(order[s])
-                    if j == i:
-                        continue
-                    delta = wrapped_delta(pos[j], x, world)
-                    dist = float(np.linalg.norm(delta))
-                    if dist < 1e-15:
-                        continue
-                    r = dist / r_max
-                    if r > 1.0:
-                        continue
-                    a = cfg.matrix[ti, int(types[j])]
-                    f = float(mohr_force_scalar(np.array([r]), np.array([a]), beta)[0])
-                    acc += gain * f * (delta / dist)
-        accel[i] = acc
+    bin_of = tables["bin_of"]
+    bx = bin_of % gx
+    by = bin_of // gx
+    # Same nested (dy, dx) walk order as the GPU kernels. The grid check above
+    # guarantees these are distinct bins, so no particle is visited twice.
+    offsets = [
+        (dy, dx)
+        for dy in range(-radius, radius + 1)
+        for dx in range(-radius, radius + 1)
+    ]
+    for start in range(0, n, _PAIR_CHUNK):
+        owners = np.arange(start, min(start + _PAIR_CHUNK, n))
+        neighbor_bins = np.stack(
+            [((by[owners] + dy) % gy) * gx + (bx[owners] + dx) % gx for dy, dx in offsets],
+            axis=1,
+        ).ravel()
+        lo = ranges[neighbor_bins, 0]
+        counts = ranges[neighbor_bins, 1] - lo
+        total = int(counts.sum())
+        if total == 0:
+            continue
+        first = np.repeat(np.cumsum(counts) - counts, counts)
+        slots = np.repeat(lo, counts) + (np.arange(total) - first)
+        i = np.repeat(np.repeat(owners, len(offsets)), counts)
+        j = order[slots]
+        delta = wrapped_delta(pos[j], pos[i], world)
+        dist = np.linalg.norm(delta, axis=1)
+        keep = (j != i) & (dist >= 1e-15) & (dist <= r_max)
+        i, j, delta, dist = i[keep], j[keep], delta[keep], dist[keep]
+        f = mohr_force_scalar(dist / r_max, cfg.matrix[types[i], types[j]], beta)
+        contrib = (gain * f / dist)[:, None] * delta
+        local = i - start
+        for axis in range(2):
+            accel[owners, axis] = np.bincount(local, weights=contrib[:, axis], minlength=len(owners))
     return accel
 
 

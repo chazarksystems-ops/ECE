@@ -1,6 +1,9 @@
 # Shader fragments
 
-These are math-correct snippets, not a full wgpu project.
+These are math-correct reference snippets, not a full wgpu project, and
+no Python module loads them. The executable WGSL lives inline in
+`ece/wgpu_*.py` (Mohr, Field Life, Lenia, Particle Lenia, PIC, and the
+native preview).
 
 ## `shaders/mohr_force.wgsl`
 
@@ -25,5 +28,6 @@ MaCE: `SimParams` with `field_w/h` and `transport_beta`, `affinity`,
 
 ## Not provided
 
-Prefix-sum shaders, FFT, deposit CAS, render. Those belong to M1–M4
-hosts, not this reference.
+Prefix-sum shaders, FFT, deposit CAS, render. The `ece/wgpu_*.py`
+hosts cover deposit (segmented, no CAS) and render; hash tables are
+still built on the CPU.

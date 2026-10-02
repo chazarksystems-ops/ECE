@@ -1,5 +1,5 @@
-# M4 sketch. Not runnable as a full PIC loop yet.
-# Declares both substrates so the loader can reject incomplete builds.
+# M4 hybrid: Mohr -> deposit -> Field Life -> sample, one-way coupling.
+# Sampled field values are exported but do not yet feed back into particle forces.
 
 [simulation]
 dt = 0.01

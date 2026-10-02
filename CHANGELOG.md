@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+- Spatial hash: reject grids with fewer bins per axis than the neighborhood
+  walk (they double-counted wrapped bins); validated by the loader and by
+  the CPU, CUDA, and WebGPU binned force paths.
+- Config: unknown keys inside any table are now errors, matching the schema.
+- CPU binned Mohr force is vectorized (~19× faster at 4,096 particles).
+- `tests/test_step_mohr.py` no longer requires `tkinter`; the matrix parser
+  moved to `ece.matrix`.
+- Docs reconciled with the code: status, hybrid one-way coupling, config
+  example, hash rules, file index, shader notes, benchmark figures.
+
 ## 0.1.0 — 2026-09-28
 
 - Implemented review corrections as executable kernels.

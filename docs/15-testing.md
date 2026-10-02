@@ -4,14 +4,16 @@
 python3 -m pytest tests/ -q
 ```
 
-88 tests after the M1 preview, field runners, PIC references, and replay tests.
+92 tests after the M1 preview, field runners, PIC references, replay tests,
+and hash/config guards. Without a GPU, 52 run and 40 skip; no test needs
+`tkinter`.
 
 | File | Locks |
 |---|---|
 | `test_mohr.py` | wall, tent peak, horizon, scale invariance, asymmetry, wrap |
 | `test_mace.py` | per-channel mass, uniform fixed point, corner torus, local-max softmax, crowding |
-| `test_bins_integrate.py` | exclusive scan, frozen snapshot, torus-aligned bins, Mohr-gamma conversion, wrap |
-| `test_config.py` | TOML load, chase matrix, channel mismatch, invalid hash grid, unknown keys |
+| `test_bins_integrate.py` | exclusive scan, frozen snapshot, torus-aligned bins, grid ≥ neighborhood, Mohr-gamma conversion, wrap |
+| `test_config.py` | TOML load, chase matrix, channel mismatch, invalid hash grid, unknown top-level and in-table keys |
 | `test_hybrid.py` | CPU hybrid scheduling, per-species mass, sampled values, NPZ output |
 | `test_cuda_mohr.py` | optional CUDA-vs-CPU step, resident stability, CLI smoke, same-device repeatability (skips without device) |
 | `test_cuda_field_life.py` | optional CUDA-vs-CPU three-step field parity, mass readback, and CLI NPZ output |
@@ -32,7 +34,7 @@ python3 -m pytest tests/ -q
 | `test_particle_lenia.py` | shell normalization, energy-gradient finite difference, periodic run, CLI state export |
 | `test_fixedpoint_mohr.py` | fixed-point oracle tolerance, integer repeatability, wrap bounds, CLI Q-state export |
 | `test_pic.py` | per-species deposit mass, torus sampling, deposit/sample adjoint identity |
-| `test_step_mohr.py` | torus stay-in, per-frame binned vs dense agreement, headless CLI, matrix validation |
+| `test_step_mohr.py` | torus stay-in, per-frame binned vs dense agreement (incl. minimal 3×3 grid), headless CLI, matrix validation |
 
 GPU tests skip cleanly when their adapter is unavailable. Small-N CPU oracle
 parity and per-channel mass readback are the primary backend gates.

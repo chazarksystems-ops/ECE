@@ -44,7 +44,7 @@ Compile only the passes the active rules declare.
 | Mohr | hash + Forces + Integrate |
 | Field Life | Convolve + MaCE pair |
 | Lenia | Convolve + Growth |
-| Particle Lenia | Deposit + Convolve + Sample + Integrate |
+| Particle Lenia | direct shell KDE + EnergyGradient + Integrate (no PIC) |
 | Hybrid | union |
 
 ## Plugin surface (logical, not yet code)
@@ -86,8 +86,8 @@ CPU Mohr, Field Life, Lenia, and Particle Lenia runners; Tk and native
 WebGPU previews; PIC deposit/sample reference operations; and an optional
 CUDA Mohr force kernel with GPU-built hash tables, CUDA Field Life passes, and deterministic
 CUDA PIC deposit/sample primitives. WGSL compute paths cover Mohr, Field
-Life, Lenia, Particle Lenia, and PIC exchange. CPU/CUDA/WebGPU hybrid schedulers expose
-sampled fields to rule plugins. The native Qt/WebGPU presentation host
+Life, Lenia, Particle Lenia, and PIC exchange. CPU/CUDA/WebGPU hybrid schedulers export
+sampled fields; feeding them back into particle forces is not built yet. The native Qt/WebGPU presentation host
 supports Mohr particles, Particle Lenia, Field Life, and Lenia fields. CUDA
 Mohr preview and hybrid hash/PIC planning remain device-resident. See
 `docs/09-roadmap.md`.

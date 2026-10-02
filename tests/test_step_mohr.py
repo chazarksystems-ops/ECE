@@ -5,7 +5,7 @@ import pytest
 
 from ece.__main__ import main
 from ece.config import load_config
-from ece.preview import parse_matrix_values
+from ece.matrix import parse_matrix_values
 from ece.step_mohr import run, seed_state, step
 
 CFG = Path(__file__).resolve().parents[1] / "configs" / "particle_life_chase.toml"
@@ -84,3 +84,16 @@ def test_matrix_editor_parser_validates_and_preserves_values():
     np.testing.assert_array_equal(matrix, [[1.0, -0.25], [0.5, 0.0]])
     with pytest.raises(ValueError, match="between -1 and 1"):
         parse_matrix_values([["1.1"]], size=1)
+
+
+def test_bins_match_dense_on_minimal_three_by_three_grid():
+    cfg = load_config(CFG)
+    cfg.mohr["particles"] = 96
+    cfg.mohr["r_max"] = 0.3
+    cfg.hash["cell"] = 1.0 / 3.0
+    cfg.hash["grid"] = [3, 3]
+    a = seed_state(cfg)
+    b = type(a)(a.pos.copy(), a.vel.copy(), a.types.copy(), a.frame)
+    s_bin = step(a, cfg, use_bins=True)
+    s_den = step(b, cfg, use_bins=False)
+    np.testing.assert_allclose(s_bin.vel, s_den.vel, rtol=1e-9, atol=1e-12)

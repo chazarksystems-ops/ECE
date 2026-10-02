@@ -54,6 +54,7 @@ of a broken clip.
 - [x] Deterministic CUDA segmented deposit and bilinear sample passes
 - [x] Deterministic WGSL segmented deposit and bilinear sample passes
 - [x] CPU/CUDA/WebGPU hybrid scheduler: Mohr → deposit → Field Life → sample
+- [ ] Two-way coupling: sampled fields act on particle forces
 - [x] CUDA hybrid keeps particle/velocity/field state and stable hash/PIC planning on-device
 - [x] Same-device repeated CUDA hybrid runs produce identical state
 - [x] 1024-particle/128² CUDA hybrid baseline: ~746 steps/s over 100 frames (GB10)
@@ -65,11 +66,11 @@ of a broken clip.
 ## M5 — CUDA path on Spark
 
 - [x] Optional CUDA Mohr force kernel with GPU-built hash tables and oracle comparison
-- [x] CUDA hash count/scan/scatter and persistent device-resident Mohr integration
+- [x] Device-side hash planning (CuPy stable sort + bincount + scan) and persistent device-resident Mohr integration
 - [x] Reproducible stable-sort CUDA benchmark and 4096-particle baseline (GB10: ~600 steps/s, 100 frames)
 - [x] Same-device deterministic standalone and hybrid CUDA repeatability tests
 - [x] Stable-sort CUDA Mohr scaling probes: 16K at 135 steps/s; 65K at 10.6 steps/s
-- [x] Constant-density 1M-particle CUDA run: 10 frames, ~9.0 steps/s, finite torus state
+- [x] Constant-density 1M-particle CUDA run: 10 frames, ~9.0 steps/s, finite torus state; ~5.4 steps/s over 100 frames
 - [ ] Optimize standalone CUDA Mohr throughput beyond this baseline
 - [x] cuFFT-backed 3D field update prototype
 - [x] CPU parity and per-channel mass at 16³; 256³ and 512³ feasibility probes

@@ -41,5 +41,18 @@ def make_matrix(
     raise ValueError(f"unknown matrix mode {mode!r}")
 
 
+def parse_matrix_values(rows: list[list[str]], size: int) -> np.ndarray:
+    """Parse editor text into a ``size`` x ``size`` matrix with entries in [-1, 1]."""
+    try:
+        matrix = np.asarray([[float(value) for value in row] for row in rows])
+    except ValueError as exc:
+        raise ValueError("matrix entries must be numbers") from exc
+    if matrix.shape != (size, size):
+        raise ValueError(f"matrix must be {size} by {size}")
+    if not np.isfinite(matrix).all() or np.any(matrix < -1.0) or np.any(matrix > 1.0):
+        raise ValueError("matrix entries must be finite and between -1 and 1")
+    return matrix
+
+
 def save_matrix(path: Path, matrix: np.ndarray) -> None:
     np.savetxt(path, matrix, fmt="%.6f")

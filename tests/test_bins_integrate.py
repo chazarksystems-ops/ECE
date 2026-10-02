@@ -49,3 +49,14 @@ def test_wrap_stays_in_torus():
     assert np.all(p >= 0.0) and np.all(p < 1.0)
     # No friction → velocity unchanged.
     np.testing.assert_allclose(v, vel)
+
+
+def test_grid_smaller_than_neighborhood_is_rejected():
+    from ece.bins import validate_hash_grid
+
+    with pytest.raises(ValueError, match="double-counts"):
+        validate_hash_grid((2, 2), 3)
+    with pytest.raises(ValueError, match="double-counts"):
+        validate_hash_grid((4, 8), 5)
+    assert validate_hash_grid((3, 3), 3, np.array([1.0, 1.0]), 0.3) == 1
+    assert validate_hash_grid((5, 5), 5, np.array([1.0, 1.0]), 0.4) == 2
