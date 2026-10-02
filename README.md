@@ -139,7 +139,9 @@ not a Mohr matrix simulation.
 | Tests | `tests/` |
 | Handbook | `docs/handbook.pdf` |
 
-Start at `docs/00-overview.md`, then `docs/13-file-index.md`.
+Start at `docs/00-overview.md`, then `docs/13-file-index.md`. Open work is
+in `docs/09-roadmap.md` as self-contained task cards; contributors and
+coding agents should read `AGENTS.md` first.
 
 ## Corrections in one line each
 
