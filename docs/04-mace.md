@@ -55,7 +55,9 @@ preventing overflow and local denominator underflow.
 ## Implementation
 
 Python: `ece.mace.mace_step`.
-WGSL: `shaders/mace_2pass.wgsl` (`mace_denom`, `mace_gather`).
+WGSL: the executable passes, including the local-maximum rescaling, are
+inline in `ece/wgpu_field_life.py`. `shaders/mace_2pass.wgsl` is a shorter
+reference fragment without the rescaling; do not ship it for large `β·A`.
 
 Multi-channel: run A and B per channel. `Z` is computed from that
 channel’s affinity, not shared across colors, unless you deliberately

@@ -45,3 +45,24 @@ def test_hash_grid_must_fit_three_by_three_neighborhood(tmp_path):
     p.write_text(raw)
     with pytest.raises(ValueError, match="world/grid cells"):
         load_config(p)
+
+
+def test_unknown_key_inside_section_rejected(tmp_path):
+    raw = (CFG / "particle_life_6.toml").read_text().replace("lambda = ", "lamda = ")
+    p = tmp_path / "typo.toml"
+    p.write_text(raw)
+    with pytest.raises(ValueError, match=r"unknown keys in \[mohr\]: \['lamda'\]"):
+        load_config(p)
+
+
+def test_hash_grid_smaller_than_neighborhood_rejected(tmp_path):
+    raw = (
+        (CFG / "particle_life_6.toml").read_text()
+        .replace("r_max = 0.08", "r_max = 0.4")
+        .replace("cell = 0.08", "cell = 0.5")
+        .replace("grid = [12, 12]", "grid = [2, 2]")
+    )
+    p = tmp_path / "tiny_grid.toml"
+    p.write_text(raw)
+    with pytest.raises(ValueError, match="at least 3 bins per axis"):
+        load_config(p)

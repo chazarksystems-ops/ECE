@@ -35,6 +35,39 @@ def bin_index(
     return iy * gx + ix
 
 
+def validate_hash_grid(
+    grid,
+    neighborhood: int,
+    world: np.ndarray | None = None,
+    r_max: float | None = None,
+) -> int:
+    """Check that a ``neighborhood``-wide walk visits distinct bins covering ``r_max``.
+
+    A walk wider than the grid wraps onto the same bin twice and double-counts
+    every particle in it. Returns the walk radius (``neighborhood // 2``).
+    """
+    neighborhood = int(neighborhood)
+    if neighborhood not in (3, 5):
+        raise ValueError("hash.neighborhood must be 3 or 5")
+    grid = tuple(int(size) for size in grid)
+    if len(grid) != 2:
+        raise ValueError("hash.grid must contain two bin counts")
+    if any(size < neighborhood for size in grid):
+        raise ValueError(
+            f"hash.grid must have at least {neighborhood} bins per axis for "
+            f"neighborhood={neighborhood}; a smaller grid double-counts wrapped bins"
+        )
+    radius = neighborhood // 2
+    if world is not None and r_max is not None:
+        widths = np.asarray(world, dtype=np.float64) / np.asarray(grid, dtype=np.float64)
+        # Relative slack so float32 world copies on GPU paths agree with the loader.
+        if np.any(widths * radius * (1.0 + 1e-6) < r_max):
+            raise ValueError(
+                f"world/grid cells must be >= mohr.r_max / {radius} for neighborhood={neighborhood}"
+            )
+    return radius
+
+
 def exclusive_scan(counts: np.ndarray) -> np.ndarray:
     counts = np.asarray(counts, dtype=np.int64)
     offsets = np.empty_like(counts)

@@ -10,22 +10,11 @@ from pathlib import Path
 import numpy as np
 
 from .config import load_config
+from .matrix import parse_matrix_values
 from .step_mohr import MohrState, seed_state, step
 
 
 _SPECIES_COLORS = ("#f0a35e", "#78c4a3", "#e36f6f", "#78a9d1", "#d9c86c", "#b48bd0")
-
-
-def parse_matrix_values(rows: list[list[str]], size: int) -> np.ndarray:
-    try:
-        matrix = np.asarray([[float(value) for value in row] for row in rows])
-    except ValueError as exc:
-        raise ValueError("matrix entries must be numbers") from exc
-    if matrix.shape != (size, size):
-        raise ValueError(f"matrix must be {size} by {size}")
-    if not np.isfinite(matrix).all() or np.any(matrix < -1.0) or np.any(matrix > 1.0):
-        raise ValueError("matrix entries must be finite and between -1 and 1")
-    return matrix
 
 
 class MohrPreview:

@@ -42,7 +42,8 @@ dt = 0.1
 
 [hash]
 cell = 0.08                 # >= r_max
-grid = [13, 13]
+grid = [12, 12]             # world / grid >= r_max; >= 3 bins per axis
+neighborhood = 3            # or 5 with cell >= r_max / 2
 
 [io]
 headless = true
@@ -50,9 +51,10 @@ frames = 1000
 hash_every = 0
 ```
 
-Unknown keys are errors. Do not silently ignore a misspelled
-`r_max`. The schema uses `"additionalProperties": false` on each
-object.
+Unknown keys are errors, at the top level and inside every table.
+A misspelled `lamda` is rejected rather than silently running
+undamped. The schema uses `"additionalProperties": false` on each
+object, and `ece/config.py` mirrors those key sets.
 
 ## Matrix modes
 
@@ -70,4 +72,8 @@ object.
 - `lambda ≥ 0`
 - `dt > 0`
 - `species.count == matrix side` if a file is loaded
-- `hash.cell >= r_max` unless `hash.neighborhood` is set to 5
+- `hash.neighborhood ∈ {3, 5}`
+- `hash.cell >= r_max` for neighborhood 3, `>= r_max / 2` for 5
+- `hash.grid` required for a 2D hash; `world / grid >= r_max / (neighborhood // 2)`
+- `hash.grid >= neighborhood` bins per axis — a smaller grid wraps the
+  walk onto the same bin twice and double-counts its particles

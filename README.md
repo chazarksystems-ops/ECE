@@ -9,6 +9,9 @@ math, and cuts the build to something that can finish.
 
 ## Quick start
 
+CI runs the CPU suite on every pull request (`.github/workflows/ci.yml`).
+
+
 ```bash
 python3 -m pip install numpy pytest
 python3 -m pytest tests/ -q
@@ -33,9 +36,10 @@ For optional CUDA Field Life, Lenia, and Particle Lenia, install Numba with
 `python3 -m pip install '.[cuda]'`. Stable-sort CUDA Mohr and resident CUDA
 hybrid also require `python3 -m pip install '.[cuda-fft]'` for CuPy. Mohr
 builds hashes and keeps state resident; the hybrid keeps particle/field state
-and stable planning on-device. A constant-density one-million-particle
-100-frame run completes at about 5.4 steps/s; higher sustained throughput and
-system-memory accounting remain future work.
+and stable planning on-device. On the GB10, a constant-density one-million-particle
+run measured about 9.0 steps/s over a 10-frame probe and about 5.4 steps/s over
+100 frames; higher sustained throughput and system-memory accounting remain
+future work.
 
 Benchmark stable-sort resident CUDA Mohr after JIT warmup with
 `python3 tools/benchmark_cuda_mohr.py --particles 4096 16384 65536 --frames 3`.
@@ -138,7 +142,9 @@ not a Mohr matrix simulation.
 | Tests | `tests/` |
 | Handbook | `docs/handbook.pdf` |
 
-Start at `docs/00-overview.md`, then `docs/13-file-index.md`.
+Start at `docs/00-overview.md`, then `docs/13-file-index.md`. Open work is
+in `docs/09-roadmap.md` as self-contained task cards; contributors and
+coding agents should read `AGENTS.md` first.
 
 ## Corrections in one line each
 
@@ -150,7 +156,13 @@ Start at `docs/00-overview.md`, then `docs/13-file-index.md`.
 
 ## Status
 
-M0 complete. CPU Mohr, Field Life, Lenia, Particle Lenia, and PIC reference
-paths are available; M1 also has a headless runner and interactive Tk preview.
-Native WebGPU presentation, fully device-resident hybrid execution, and the
-evaluator are not built.
+M0–M4 are complete; M5 is partial (see `docs/09-roadmap.md`). CPU Mohr,
+Field Life, Lenia, Particle Lenia, and PIC reference paths are available, with
+optional CUDA/CuPy/WebGPU backends, a Tk preview, and a native Qt/WebGPU
+window. The hybrid couples one way: particles deposit into the field each
+frame, but sampled field values do not yet feed back into particle forces.
+The CUDA fixed-point replay port and the evaluator are not built.
+
+The CPU binned Mohr stepper is vectorized (about 0.5 s per frame at 4,096
+particles); use `--particles` for quick CPU smoke runs. The `--fixedpoint`
+replay path is pure-Python O(N²) and is meant for small N.

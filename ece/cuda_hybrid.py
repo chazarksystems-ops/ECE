@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import numpy as np
 
+from .bins import validate_hash_grid
 from .config import SimConfig
 from .cuda_field_life import _get_kernels as _get_field_kernels
 from .cuda_mohr import (
@@ -94,10 +95,9 @@ def run_cuda_resident(cfg: SimConfig, frames: int) -> HybridState:
     cells = channels * height * width
     grid = tuple(int(size) for size in cfg.hash["grid"])
     grid_x, grid_y = grid
-    neighborhood = int(cfg.hash.get("neighborhood", 3))
-    if neighborhood not in (3, 5):
-        raise ValueError("hash neighborhood must be 3 or 5")
-    radius = neighborhood // 2
+    radius = validate_hash_grid(
+        grid, int(cfg.hash.get("neighborhood", 3)), cfg.world, float(cfg.mohr["r_max"])
+    )
     bin_widths = np.asarray(cfg.world, dtype=np.float32) / np.asarray(grid, dtype=np.float32)
 
     d_pos = cuda.to_device(np.ascontiguousarray(positions_host, dtype=np.float32))

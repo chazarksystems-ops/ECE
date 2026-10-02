@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 import tomllib
 
+from .bins import validate_hash_grid
 from .matrix import make_matrix
 import numpy as np
 
@@ -32,6 +33,19 @@ class SimConfig:
 
 _ALLOWED_TOP = {"simulation", "species", "mohr", "field", "lenia", "particle_lenia", "hash", "io"}
 _ALLOWED_RULES = {"mohr", "field_life", "lenia", "particle_lenia", "pps"}
+# Mirrors the per-object properties in schemas/sim.schema.json.
+_ALLOWED_KEYS = {
+    "simulation": {"dt", "world", "seed", "rules"},
+    "species": {"count", "matrix", "range", "matrix_path"},
+    "mohr": {"particles", "r_max", "beta", "gain", "lambda"},
+    "field": {"dims", "channels", "strength", "crowding_lambda", "transport_beta", "kernel"},
+    "lenia": {"mu", "sigma", "dt"},
+    "particle_lenia": {
+        "particles", "kernel_mu", "kernel_sigma", "growth_mu", "growth_sigma", "c_rep", "dt",
+    },
+    "hash": {"cell", "grid", "neighborhood"},
+    "io": {"headless", "frames", "hash_every"},
+}
 
 
 def load_config(path: str | Path) -> SimConfig:
@@ -41,6 +55,15 @@ def load_config(path: str | Path) -> SimConfig:
     extra = set(raw) - _ALLOWED_TOP
     if extra:
         raise ValueError(f"unknown top-level keys: {sorted(extra)}")
+    for section, allowed in _ALLOWED_KEYS.items():
+        block = raw.get(section)
+        if block is None:
+            continue
+        if not isinstance(block, dict):
+            raise ValueError(f"[{section}] must be a table")
+        unknown = set(block) - allowed
+        if unknown:
+            raise ValueError(f"unknown keys in [{section}]: {sorted(unknown)}")
     sim = raw.get("simulation") or {}
     spec = raw.get("species") or {}
     for req in ("dt", "world", "seed"):
@@ -78,16 +101,15 @@ def load_config(path: str | Path) -> SimConfig:
 
     hsh = dict(raw.get("hash") or {})
     if hsh and mohr:
-        cell = float(hsh.get("cell", mohr.get("r_max", 0.0)))
         r_max = float(mohr.get("r_max", 0.0))
         neigh = int(hsh.get("neighborhood", 3))
-        if neigh == 3 and cell + 1e-12 < r_max:
-            raise ValueError("hash.cell must be >= mohr.r_max for neighborhood=3")
-        grid = hsh.get("grid")
-        if world.size == 2 and grid is not None and len(grid) == 2 and neigh == 3:
-            widths = world / np.asarray(grid, dtype=np.float64)
-            if np.any(widths + 1e-12 < r_max):
-                raise ValueError("world/grid cells must be >= mohr.r_max for neighborhood=3")
+        cell = float(hsh.get("cell", r_max))
+        if cell * (neigh // 2) + 1e-12 < r_max:
+            raise ValueError(f"hash.cell must be >= mohr.r_max / {neigh // 2} for neighborhood={neigh}")
+        if world.size == 2:
+            if "grid" not in hsh:
+                raise ValueError("hash.grid is required for a 2D spatial hash")
+            validate_hash_grid(hsh["grid"], neigh, world, r_max)
 
     field = dict(raw.get("field") or {})
     if field and "channels" in field and int(field["channels"]) != k:

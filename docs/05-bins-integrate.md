@@ -6,8 +6,13 @@ for a torus with a single `r_max`.
 ## Cell size
 
 `cell_size >= r_max` lets a 3×3 (2D) or 3×3×3 (3D) walk cover the
-horizon. If memory for bins explodes, coarsen to `cell = 2 r_max`
-and walk 5×5. Document the choice; do not mix them at runtime.
+horizon. To refine bins, use `cell >= r_max / 2` and walk 5×5.
+Document the choice; do not mix them at runtime.
+
+The grid needs at least `neighborhood` bins per axis. With fewer, the
+torus wrap maps two walk offsets onto the same bin and its particles
+are counted twice. `ece.bins.validate_hash_grid` enforces this for the
+loader and every backend.
 
 ## Four arrays, not two
 
@@ -42,7 +47,9 @@ its species channel on a periodic grid. `ece.pic.sample_fields` gathers all
 channels back at particle positions with the same weights. The pair preserves
 per-species deposited mass and satisfies the deposit/sample adjoint identity.
 These are CPU reference operations. `ece.hybrid.run` schedules Mohr,
-deposit, Field Life, and sample passes. CUDA hybrid keeps particle, velocity,
+deposit, Field Life, and sample passes. Coupling is currently one way:
+the field is rebuilt from the deposit each frame, and the sampled values
+are exported but do not yet act on particle forces. CUDA hybrid keeps particle, velocity,
 field, and scratch buffers on-device and uses stable CuPy sorts for hash and
 deposit planning. WebGPU currently transfers pass state per frame. Both PIC
 GPU paths reduce target-cell segments without floating-point atomics.

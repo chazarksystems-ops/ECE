@@ -155,13 +155,15 @@ def mohr_accelerations_wgpu(
     if hash_cfg:
         from .bins import snapshot_and_scatter
 
+        from .bins import validate_hash_grid
+
         grid = tuple(int(size) for size in hash_cfg["grid"])
+        radius = validate_hash_grid(grid, int(hash_cfg.get("neighborhood", 3)), world, r_max)
         tables = snapshot_and_scatter(pos.astype(np.float64), float(hash_cfg["cell"]), grid, world)
         ranges = np.ascontiguousarray(tables["ranges"], dtype=np.uint32)
         sorted_indices = np.ascontiguousarray(tables["sorted_indices"], dtype=np.uint32)
         widths = world / np.asarray(grid, dtype=np.float32)
         use_bins = 1.0
-        radius = int(hash_cfg.get("neighborhood", 3)) // 2
     else:
         grid = (1, 1)
         ranges = np.zeros((1, 2), dtype=np.uint32)
