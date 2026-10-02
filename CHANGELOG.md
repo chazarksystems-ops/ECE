@@ -6,7 +6,9 @@
   walk (they double-counted wrapped bins); validated by the loader and by
   the CPU, CUDA, and WebGPU binned force paths.
 - Config: unknown keys inside any table are now errors, matching the schema.
-- CPU binned Mohr force is vectorized (~19× faster at 4,096 particles).
+- CPU binned Mohr force is vectorized (~19× faster at 4,096 particles),
+  with work chunked by candidate-pair count so clustered particles stay
+  bounded in memory (4,096 particles in one bin: 1.9 GB peak → 0.18 GB).
 - `tests/test_step_mohr.py` no longer requires `tkinter`; the matrix parser
   moved to `ece.matrix`.
 - Roadmap rewritten as task cards (R-01 to R-15) with files, acceptance

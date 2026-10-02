@@ -45,7 +45,27 @@ def step(state: MohrState, cfg: SimConfig, use_bins: bool = True) -> MohrState:
     return MohrState(pos=pos, vel=vel, types=state.types, frame=state.frame + 1)
 
 
-_PAIR_CHUNK = 4096
+# Upper bound on candidate pairs materialized at once. Chunking by owner count
+# alone lets clustered particles (all in a few bins) allocate ~N² pairs.
+_PAIR_BUDGET = 1 << 20
+
+
+def _owner_chunks(pair_counts: np.ndarray, budget: int) -> list[tuple[int, int]]:
+    """Split owners into [start, end) runs holding at most ``budget`` candidate pairs.
+
+    A single owner whose own candidates exceed the budget still gets a chunk.
+    """
+    chunks = []
+    cumulative = np.cumsum(pair_counts)
+    start = 0
+    n = len(pair_counts)
+    while start < n:
+        base = int(cumulative[start - 1]) if start else 0
+        end = int(np.searchsorted(cumulative, base + budget, side="right"))
+        end = max(end, start + 1)
+        chunks.append((start, end))
+        start = end
+    return chunks
 
 
 def _binned_accel(state: MohrState, cfg: SimConfig, r_max, beta, gain) -> np.ndarray:
@@ -73,12 +93,14 @@ def _binned_accel(state: MohrState, cfg: SimConfig, r_max, beta, gain) -> np.nda
         for dy in range(-radius, radius + 1)
         for dx in range(-radius, radius + 1)
     ]
-    for start in range(0, n, _PAIR_CHUNK):
-        owners = np.arange(start, min(start + _PAIR_CHUNK, n))
-        neighbor_bins = np.stack(
-            [((by[owners] + dy) % gy) * gx + (bx[owners] + dx) % gx for dy, dx in offsets],
-            axis=1,
-        ).ravel()
+    neighbor_bins_all = np.stack(
+        [((by + dy) % gy) * gx + (bx + dx) % gx for dy, dx in offsets],
+        axis=1,
+    )
+    pair_counts = (ranges[neighbor_bins_all, 1] - ranges[neighbor_bins_all, 0]).sum(axis=1)
+    for start, end in _owner_chunks(pair_counts, _PAIR_BUDGET):
+        owners = np.arange(start, end)
+        neighbor_bins = neighbor_bins_all[start:end].ravel()
         lo = ranges[neighbor_bins, 0]
         counts = ranges[neighbor_bins, 1] - lo
         total = int(counts.sum())

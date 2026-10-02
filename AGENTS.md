@@ -29,7 +29,7 @@ Optional extras (`pyproject.toml`): `.[cuda]` (Numba), `.[cuda-fft]`
 them; import them lazily inside functions, as the existing backends do.
 
 A cloud container usually has no GPU. The CPU suite then reports about
-52 passed and 40 skipped. Skipped GPU tests prove nothing about GPU
+54 passed and 40 skipped. Skipped GPU tests prove nothing about GPU
 code: see "GPU work without a GPU" below.
 
 ## Invariants (do not break; tests lock most of them)
@@ -117,6 +117,12 @@ such device:
   the GUI modules.
 - Python float literals in Numba kernels promoting float32 math to
   float64 (see R-12).
+- `ece/__init__.py` re-exports functions under names that match
+  submodules (e.g. `step_mohr` is the `step` function), so
+  `import ece.step_mohr as m` returns the function. In tests, use
+  `sys.modules["ece.step_mohr"]` to reach the module.
+- Vectorized pair loops sized by particle count instead of pair count:
+  clustered particles then allocate ~N² pairs at once.
 - Raw CUDA kernels indexing with 32-bit `int` on very large volumes
   (see R-10).
 
