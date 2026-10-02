@@ -48,7 +48,6 @@ the roadmap box until those commands pass.
 
 | ID | Title | Priority | Hardware | Depends on |
 |---|---|---|---|---|
-| R-01 | CPU continuous integration | P0 | cpu | — |
 | R-02 | Schema / loader drift test | P1 | cpu | — |
 | R-03 | CLI backend-availability consistency | P2 | cpu | — |
 | R-04 | MaCE input-shape ambiguity | P2 | cpu | — |
@@ -63,27 +62,13 @@ the roadmap box until those commands pass.
 | R-13 | Vectorize CPU fixed-point Mohr | P3 | cpu | — |
 | R-14 | CUDA fixed-point replay port | P2 | cuda | R-06 |
 | R-15 | Long 512³ run and memory accounting | P2 | gb10 | R-10 |
+| R-16 | WebGPU tests in CI on a software adapter | P3 | cpu | — |
 
-P0 unblocks everything else (no CI means regressions land silently).
-The `cpu` cards can run in parallel; they touch different files.
+CPU CI runs on every pull request (`.github/workflows/ci.yml`), so a
+`cpu` card's PR must be green before merge. The `cpu` cards can run in
+parallel; they touch different files.
 
 ## Open work
-
-### R-01 — CPU continuous integration
-
-- **Why:** there is no CI. Every invariant in `tests/` is only checked
-  when someone remembers to run it.
-- **Files:** new `.github/workflows/ci.yml`.
-- **Do:** on push and pull request, run on Ubuntu with Python 3.11 and
-  3.12: `pip install numpy pytest`, then `python3 -m pytest tests -q`
-  and the config check from `justfile` (`check-configs`). Do not install
-  `numba`, `cupy`, or `wgpu`; their tests must skip, not fail.
-- **Done when:** the workflow is green on a PR, and a deliberately broken
-  invariant (try it locally, do not commit it) would turn it red.
-- **Verify:** the workflow run on the PR.
-- **Note:** a software Vulkan driver (Mesa lavapipe) may let the `wgpu`
-  tests run without a GPU. Treat that as a separate, optional follow-up
-  card; do not block R-01 on it.
 
 ### R-02 — Schema / loader drift test
 
@@ -327,6 +312,22 @@ The `cpu` cards can run in parallel; they touch different files.
 - **Done when:** numbers are recorded below with the exact command; the
   same for the sustained 256³ default.
 
+### R-16 — WebGPU tests in CI on a software adapter
+
+- **Why:** CI installs no GPU extras, so all `tests/test_wgpu_*.py`
+  skip. A software Vulkan driver (Mesa lavapipe) may let `wgpu` find an
+  adapter on a GitHub runner, which would put the WGSL-vs-CPU parity
+  tests under CI. Unverified; this card is to find out.
+- **Files:** `.github/workflows/ci.yml` (a separate, optional job).
+- **Do:** in a new job, install `mesa-vulkan-drivers` and
+  `pip install wgpu` (not PySide6), then run
+  `python -m pytest tests/test_wgpu_*.py -q -rs`. Exclude
+  `tests/test_wgpu_preview.py`, which needs a display.
+- **Done when:** the job reports the WebGPU compute tests as run (not
+  skipped) and passing; or, if no adapter appears, the card records that
+  finding and is closed. Mark the job `continue-on-error` until it has
+  been green for a few PRs.
+
 ## Completed milestones
 
 ### M0 — corrected kernels
@@ -336,6 +337,7 @@ The `cpu` cards can run in parallel; they touch different files.
 - [x] Two-pass MaCE + torus wrap
 - [x] Snapshot hash tables
 - [x] Invariant tests, document tree, configs, schema, WGSL fragments
+- [x] CPU CI on GitHub Actions: Python 3.11 and 3.12, full suite with GPU tests skipping, module compile check, every shipped config loads (R-01)
 
 ### M1 — 2D Mohr preview
 

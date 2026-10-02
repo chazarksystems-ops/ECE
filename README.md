@@ -9,6 +9,9 @@ math, and cuts the build to something that can finish.
 
 ## Quick start
 
+CI runs the CPU suite on every pull request (`.github/workflows/ci.yml`).
+
+
 ```bash
 python3 -m pip install numpy pytest
 python3 -m pytest tests/ -q

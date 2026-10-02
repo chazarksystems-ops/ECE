@@ -12,6 +12,8 @@
 - Roadmap rewritten as task cards (R-01 to R-15) with files, acceptance
   criteria, verification commands, and hardware needs; added `AGENTS.md`
   (conventions, invariants, definition of done) and `CLAUDE.md`.
+- CPU CI on GitHub Actions (R-01): Python 3.11 and 3.12, full test suite
+  without GPU extras, module compile check, and config loading.
 - Docs reconciled with the code: status, hybrid one-way coupling, config
   example, hash rules, file index, shader notes, benchmark figures.
 

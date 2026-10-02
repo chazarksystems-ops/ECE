@@ -5,6 +5,7 @@
 | `README.md` | Entry point |
 | `AGENTS.md` | Conventions, invariants, and definition of done for coding agents |
 | `CLAUDE.md` | Claude Code entry point; imports `AGENTS.md` |
+| `.github/workflows/ci.yml` | CPU test suite on every pull request |
 | `CORRECTIONS.md` | Deltas vs the original catalog |
 | `CHANGELOG.md` | Dated notes |
 | `pyproject.toml` | Package metadata |

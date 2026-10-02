@@ -36,5 +36,9 @@ and hash/config guards. Without a GPU, 52 run and 40 skip; no test needs
 | `test_pic.py` | per-species deposit mass, torus sampling, deposit/sample adjoint identity |
 | `test_step_mohr.py` | torus stay-in, per-frame binned vs dense agreement (incl. minimal 3×3 grid), headless CLI, matrix validation |
 
+CI (`.github/workflows/ci.yml`) runs this suite on Python 3.11 and 3.12
+for every pull request and push to `main`, without GPU extras, then
+compiles every module and loads every config in `configs/`.
+
 GPU tests skip cleanly when their adapter is unavailable. Small-N CPU oracle
 parity and per-channel mass readback are the primary backend gates.

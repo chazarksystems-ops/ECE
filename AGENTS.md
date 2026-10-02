@@ -96,7 +96,8 @@ such device:
   (or, for GPU cards without hardware, are listed for the owner).
 - New behaviour has tests; fixed bugs have a regression test that fails
   without the fix.
-- `python3 -m pytest tests -q` passes with no new failures or errors.
+- `python3 -m pytest tests -q` passes with no new failures or errors,
+  and the CI check on the PR is green.
 - Docs updated in the same change, as applicable:
   - `docs/09-roadmap.md`: delete the card, add a `- [x]` line to the
     milestone with measured numbers and hardware;
