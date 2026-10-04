@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Config schema/loader drift guard (R-02): table keys, rule/kernel enums,
+  and seed/species-count bounds are regression-tested together. The loader
+  rejects non-integer/negative seeds, non-integer species counts outside
+  `[1, 128]`, and unsupported field kernels before execution. The schema
+  now advertises only the implemented ring kernel; no new dependency.
 - Spatial hash: reject grids with fewer bins per axis than the neighborhood
   walk (they double-counted wrapped bins); validated by the loader and by
   the CPU, CUDA, and WebGPU binned force paths.

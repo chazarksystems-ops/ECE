@@ -33,6 +33,8 @@ class SimConfig:
 
 _ALLOWED_TOP = {"simulation", "species", "mohr", "field", "lenia", "particle_lenia", "hash", "io"}
 _ALLOWED_RULES = {"mohr", "field_life", "lenia", "particle_lenia", "pps"}
+_ALLOWED_FIELD_KERNELS = {"ring"}
+_MAX_SPECIES_COUNT = 128
 # Mirrors the per-object properties in schemas/sim.schema.json.
 _ALLOWED_KEYS = {
     "simulation": {"dt", "world", "seed", "rules"},
@@ -77,12 +79,18 @@ def load_config(path: str | Path) -> SimConfig:
     world = np.asarray(sim["world"], dtype=np.float64)
     if world.ndim != 1 or world.size not in (2, 3) or np.any(world <= 0):
         raise ValueError("world must be 2 or 3 positive lengths")
-    seed = int(sim["seed"])
+    # TOML booleans are Python ints' subclasses; do not coerce them or
+    # silently truncate floats/accept strings as integer config fields.
+    seed = sim["seed"]
+    if type(seed) is not int or seed < 0:
+        raise ValueError("simulation.seed must be a non-negative integer")
     rules = list(sim.get("rules") or [])
     bad = set(rules) - _ALLOWED_RULES
     if bad:
         raise ValueError(f"unknown rules: {sorted(bad)}")
-    k = int(spec["count"])
+    k = spec["count"]
+    if type(k) is not int or not 1 <= k <= _MAX_SPECIES_COUNT:
+        raise ValueError(f"species.count must be an integer between 1 and {_MAX_SPECIES_COUNT}")
     mode = spec.get("matrix", "random")
     rng_range = tuple(spec.get("range") or [-1.0, 1.0])
     mpath = spec.get("matrix_path")
@@ -112,6 +120,9 @@ def load_config(path: str | Path) -> SimConfig:
             validate_hash_grid(hsh["grid"], neigh, world, r_max)
 
     field = dict(raw.get("field") or {})
+    kernel = field.get("kernel", "ring")
+    if not isinstance(kernel, str) or kernel not in _ALLOWED_FIELD_KERNELS:
+        raise ValueError("field.kernel must be 'ring'; other kernels are not implemented")
     if field and "channels" in field and int(field["channels"]) != k:
         # Allow mismatch only if rules don't include field_life.
         if "field_life" in rules:

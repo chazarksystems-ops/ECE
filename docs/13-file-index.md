@@ -6,6 +6,7 @@
 | `AGENTS.md` | Conventions, invariants, and definition of done for coding agents |
 | `CLAUDE.md` | Claude Code entry point; imports `AGENTS.md` |
 | `.github/workflows/ci.yml` | CPU test suite on every pull request |
+| `.gitattributes` | Treat generated PDFs as binary in Git diffs |
 | `CORRECTIONS.md` | Deltas vs the original catalog |
 | `CHANGELOG.md` | Dated notes |
 | `pyproject.toml` | Package metadata |
@@ -37,6 +38,7 @@
 | `tools/benchmark_*.py` | CUDA Mohr and CuPy Field Life benchmarks |
 | `configs/*.toml` | Named soups |
 | `schemas/sim.schema.json` | Config JSON Schema |
+| `reports/REVIEW_2026-10-04_R02.md` | Published-source review and schema/loader regression evidence |
 | `docs/00`–`15` | Design set |
 | `docs/handbook.pdf` | Printable compilation |
 | `tools/build_handbook.py` | Handbook builder |

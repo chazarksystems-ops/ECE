@@ -48,7 +48,6 @@ the roadmap box until those commands pass.
 
 | ID | Title | Priority | Hardware | Depends on |
 |---|---|---|---|---|
-| R-02 | Schema / loader drift test | P1 | cpu | — |
 | R-03 | CLI backend-availability consistency | P2 | cpu | — |
 | R-04 | MaCE input-shape ambiguity | P2 | cpu | — |
 | R-05 | Canonical Orbium for Lenia (M3 exit) | P1 | cpu | — |
@@ -63,33 +62,13 @@ the roadmap box until those commands pass.
 | R-14 | CUDA fixed-point replay port | P2 | cuda | R-06 |
 | R-15 | Long 512³ run and memory accounting | P2 | gb10 | R-10 |
 | R-16 | WebGPU tests in CI on a software adapter | P3 | cpu | — |
+| R-17 | Remaining config value validation | P1 | cpu | — |
 
 CPU CI runs on every pull request (`.github/workflows/ci.yml`), so a
 `cpu` card's PR must be green before merge. The `cpu` cards can run in
 parallel; they touch different files.
 
 ## Open work
-
-### R-02 — Schema / loader drift test
-
-- **Why:** `schemas/sim.schema.json` is documentation only; the loader
-  keeps its own key sets in `ece/config.py` (`_ALLOWED_TOP`,
-  `_ALLOWED_RULES`, `_ALLOWED_KEYS`). They already disagree in places:
-  the schema allows `field.kernel = "gaussian" | "disk"` but every runner
-  rejects anything but `"ring"`; schema `seed` must be ≥ 0 and
-  `species.count` ≤ 128, the loader checks neither.
-- **Files:** `tests/test_config.py`, `ece/config.py`,
-  `schemas/sim.schema.json`, `docs/11-config-schema.md`.
-- **Do:** add a test that reads the schema JSON with the standard library
-  and asserts its per-object `properties` keys equal `_ALLOWED_KEYS`, its
-  top-level keys equal `_ALLOWED_TOP`, and its rules enum equals
-  `_ALLOWED_RULES`. Then make them agree: drop `gaussian`/`disk` from
-  the schema (or implement them as their own card), and add the
-  `seed >= 0` and `count <= 128` checks to the loader. Do not add a
-  `jsonschema` dependency.
-- **Done when:** the drift test passes and fails if either side gains a
-  key alone.
-- **Verify:** `python3 -m pytest tests/test_config.py -q`.
 
 ### R-03 — CLI backend-availability consistency
 
@@ -328,10 +307,28 @@ parallel; they touch different files.
   finding and is closed. Mark the job `continue-on-error` until it has
   been green for a few PRs.
 
+### R-17 — Remaining config value validation
+
+- **Why:** the loader is not a complete schema validator. The review
+  confirmed `simulation.dt = nan`, non-finite world lengths, and a
+  one-element `species.range` pass initial checks (the short range then
+  raises `IndexError`). Other numeric table fields are coerced or only
+  checked by the selected runner. Invalid values should fail at load.
+- **Files:** `ece/config.py`, `tests/test_config.py`,
+  `schemas/sim.schema.json`, `docs/11-config-schema.md`.
+- **Do:** audit remaining schema numeric/array constraints; reject
+  non-finite physical values, invalid types, malformed ranges and
+  dimensions with field-qualified `ValueError`. Keep valid configs and
+  seeded outputs exact. Do not add a runtime `jsonschema` dependency.
+- **Done when:** invalid values fail before matrix allocation/execution,
+  shipped configs load, and equivalent valid runs are byte-identical.
+- **Verify:** `python3 -m pytest tests/test_config.py -q` and the CPU suite.
+
 ## Completed milestones
 
 ### M0 — corrected kernels
 
+- [x] Schema/loader drift guard, strict integer seed and species count, ring-only field kernel (R-02); 31 config tests pass on CPU / Python 3.12
 - [x] Corrected Mohr tent (no extra `r_max`)
 - [x] Exponential friction
 - [x] Two-pass MaCE + torus wrap
