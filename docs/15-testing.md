@@ -4,8 +4,8 @@
 python3 -m pytest tests/ -q
 ```
 
-94 tests after the M1 preview, field runners, PIC references, replay tests,
-and hash/config guards. Without a GPU, 54 run and 40 skip; no test needs
+118 tests after the M1 preview, field runners, PIC references, replay tests,
+and hash/config guards. Without a GPU, 78 run and 40 skip; no test needs
 `tkinter`.
 
 | File | Locks |
@@ -13,7 +13,7 @@ and hash/config guards. Without a GPU, 54 run and 40 skip; no test needs
 | `test_mohr.py` | wall, tent peak, horizon, scale invariance, asymmetry, wrap |
 | `test_mace.py` | per-channel mass, uniform fixed point, corner torus, local-max softmax, crowding |
 | `test_bins_integrate.py` | exclusive scan, frozen snapshot, torus-aligned bins, grid ≥ neighborhood, Mohr-gamma conversion, wrap |
-| `test_config.py` | TOML load, chase matrix, channel mismatch, invalid hash grid, unknown top-level and in-table keys |
+| `test_config.py` | TOML load, chase matrix, channel mismatch, invalid hash grid, unknown top-level and in-table keys, schema drift, strict integer seed/count bounds, unsupported field kernels, all shipped configs |
 | `test_hybrid.py` | CPU hybrid scheduling, per-species mass, sampled values, NPZ output |
 | `test_cuda_mohr.py` | optional CUDA-vs-CPU step, resident stability, CLI smoke, same-device repeatability (skips without device) |
 | `test_cuda_field_life.py` | optional CUDA-vs-CPU three-step field parity, mass readback, and CLI NPZ output |

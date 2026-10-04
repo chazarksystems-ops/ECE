@@ -66,7 +66,7 @@
         "strength": { "type": "number" },
         "crowding_lambda": { "type": "number", "minimum": 0 },
         "transport_beta": { "type": "number", "exclusiveMinimum": 0 },
-        "kernel": { "enum": ["ring", "gaussian", "disk"] }
+        "kernel": { "enum": ["ring"] }
       }
     },
     "lenia": {

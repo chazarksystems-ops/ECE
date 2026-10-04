@@ -55,6 +55,10 @@ Unknown keys are errors, at the top level and inside every table.
 A misspelled `lamda` is rejected rather than silently running
 undamped. The schema uses `"additionalProperties": false` on each
 object, and `ece/config.py` mirrors those key sets.
+`tests/test_config.py` checks every table's keys, the rules and field
+kernel enums, and the seed/species-count bounds against the schema.
+This is a targeted drift guard, not a complete JSON Schema validator;
+runtime validation stays dependency-free.
 
 ## Matrix modes
 
@@ -67,6 +71,12 @@ object, and `ece/config.py` mirrors those key sets.
 
 ## Validation rules
 
+- `simulation.seed` is a non-negative TOML integer; floats, strings and
+  booleans are rejected rather than coerced
+- `species.count` is a TOML integer in `[1, 128]`, checked before matrix
+  allocation
+- `field.kernel` may only be `"ring"`; `"gaussian"` and `"disk"` are not
+  implemented and are rejected when loading, even in inactive tables
 - `beta ∈ (0,1)`
 - `r_max > 0`
 - `lambda ≥ 0`
