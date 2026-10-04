@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- CLI backend errors (R-03): Particle Lenia checks CUDA/WebGPU
+  availability before executing, reports missing extras with exit code 2,
+  and appears alongside hybrid runs in supported-rule messages.
 - Config schema/loader drift guard (R-02): table keys, rule/kernel enums,
   and seed/species-count bounds are regression-tested together. The loader
   rejects non-integer/negative seeds, non-integer species counts outside

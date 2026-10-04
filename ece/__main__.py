@@ -42,7 +42,7 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--frames", type=_positive_int, help="override configured frame count")
     parser.add_argument("--particles", type=_positive_int, help="override configured particle count")
     parser.add_argument("--cuda", action="store_true", help="run supported kernels on CUDA")
-    parser.add_argument("--wgpu", action="store_true", help="run Mohr force steps on WebGPU")
+    parser.add_argument("--wgpu", action="store_true", help="run supported kernels on WebGPU")
     parser.add_argument("--fixedpoint", action="store_true", help="run integer Mohr replay on the CPU")
     parser.add_argument("--output", type=Path, help="write final state to a compressed NPZ file")
     args = parser.parse_args(argv)
@@ -54,12 +54,13 @@ def main(argv: list[str] | None = None) -> None:
     if frames < 1:
         parser.error("configured io.frames must be at least 1")
     is_hybrid = len(cfg.rules) == 2 and set(cfg.rules) == {"mohr", "field_life"}
+    supported = "Mohr, Field Life, Lenia, Particle Lenia, and Mohr/Field Life hybrid runs"
     if args.wgpu and cfg.rules not in (["mohr"], ["field_life"], ["lenia"], ["particle_lenia"]) and not is_hybrid:
-        parser.error("--wgpu currently supports Mohr, Field Life, and Lenia simulations")
+        parser.error(f"--wgpu currently supports {supported}")
     if args.fixedpoint and cfg.rules != ["mohr"]:
         parser.error("--fixedpoint currently supports Mohr configs only")
     if args.cuda and cfg.rules not in (["mohr"], ["field_life"], ["lenia"], ["particle_lenia"]) and not is_hybrid:
-        parser.error("--cuda currently supports Mohr, Field Life, Lenia, and Mohr/Field Life hybrid runs")
+        parser.error(f"--cuda currently supports {supported}")
 
     if cfg.rules == ["mohr"]:
         missing = {"particles", "r_max", "beta"} - cfg.mohr.keys()
@@ -150,8 +151,12 @@ def main(argv: list[str] | None = None) -> None:
         if args.particles is not None:
             cfg.particle_lenia["particles"] = args.particles
         if args.cuda:
+            if not cuda_available():
+                parser.error("CUDA is unavailable; install the cuda extra and check the driver")
             state = run_particle_lenia_cuda(cfg, frames=frames)
         elif args.wgpu:
+            if not webgpu_available():
+                parser.error("WebGPU is unavailable; install the webgpu extra and check the adapter")
             state = run_particle_lenia_wgpu(cfg, frames=frames)
         else:
             state = run_particle_lenia(cfg, frames=frames)
@@ -188,7 +193,7 @@ def main(argv: list[str] | None = None) -> None:
         }
         summary = f"frame={state.frame} particles={len(state.particles.pos)} channels={state.rho.shape[0]}"
     else:
-        parser.error('currently supports Mohr, Field Life, Lenia, and Mohr/Field Life hybrid configs')
+        parser.error(f"currently supports {supported}")
 
     if args.output is not None:
         with args.output.open("wb") as output_file:

@@ -128,6 +128,9 @@ python3 -m ece configs/particle_lenia.toml --frames 1000 \
 
 This uses the distinct energy-gradient rule on a periodic 16×16 domain; it is
 not a Mohr matrix simulation.
+Add `--cuda` or `--wgpu` to select an installed, available backend. If its
+device is unavailable, the CLI exits with code 2 and names the required
+extra; it does not silently fall back to CPU.
 
 ## What lives here
 

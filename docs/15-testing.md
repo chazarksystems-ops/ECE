@@ -4,8 +4,8 @@
 python3 -m pytest tests/ -q
 ```
 
-118 tests after the M1 preview, field runners, PIC references, replay tests,
-and hash/config guards. Without a GPU, 78 run and 40 skip; no test needs
+122 tests after the M1 preview, field runners, PIC references, replay tests,
+and hash/config guards. Without a GPU, 82 run and 40 skip; no test needs
 `tkinter`.
 
 | File | Locks |
@@ -31,7 +31,7 @@ and hash/config guards. Without a GPU, 78 run and 40 skip; no test needs
 | `test_field_life.py` | config-driven runner, per-channel mass, field NPZ output |
 | `test_cupy_field_life.py` | optional 3D CuPy/cuFFT parity, mass conservation, and CLI volume output |
 | `test_lenia.py` | kernel normalization, bounded growth, configured extinction, Lenia NPZ output |
-| `test_particle_lenia.py` | shell normalization, energy-gradient finite difference, periodic run, CLI state export |
+| `test_particle_lenia.py` | shell normalization, energy-gradient finite difference, periodic run, CLI state export, missing-backend errors and supported-rule messages |
 | `test_fixedpoint_mohr.py` | fixed-point oracle tolerance, integer repeatability, wrap bounds, CLI Q-state export |
 | `test_pic.py` | per-species deposit mass, torus sampling, deposit/sample adjoint identity |
 | `test_step_mohr.py` | torus stay-in, per-frame binned vs dense agreement (incl. minimal 3×3 grid and clustered particles), pair-budget chunking, headless CLI, matrix validation |
