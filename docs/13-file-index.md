@@ -39,6 +39,7 @@
 | `configs/*.toml` | Named soups |
 | `schemas/sim.schema.json` | Config JSON Schema |
 | `reports/REVIEW_2026-10-04_R02.md` | Published-source review and schema/loader regression evidence |
+| `reports/REVIEW_2026-10-04_R03.md` | CLI backend-availability regression evidence |
 | `docs/00`–`15` | Design set |
 | `docs/handbook.pdf` | Printable compilation |
 | `tools/build_handbook.py` | Handbook builder |

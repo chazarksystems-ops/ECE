@@ -1,4 +1,5 @@
 from pathlib import Path
+import importlib
 
 import numpy as np
 import pytest
@@ -65,3 +66,32 @@ def test_particle_lenia_cli_writes_particle_state(tmp_path, capsys):
         assert state["vel"].shape == (24, 2)
         assert state["frame"].item() == 2
     assert capsys.readouterr().out.strip() == "frame=2 particles=24"
+
+
+@pytest.mark.parametrize(
+    ("flag", "availability", "runner", "message"),
+    [
+        ("--cuda", "cuda_available", "run_particle_lenia_cuda", "CUDA is unavailable; install the cuda extra"),
+        ("--wgpu", "webgpu_available", "run_particle_lenia_wgpu", "WebGPU is unavailable; install the webgpu extra"),
+    ],
+)
+def test_particle_lenia_cli_reports_missing_backend(monkeypatch, capsys, flag, availability, runner, message):
+    cli = importlib.import_module("ece.__main__")
+    monkeypatch.setattr(cli, availability, lambda: False)
+    monkeypatch.setattr(cli, runner, lambda *a, **kw: pytest.fail("unavailable backend was executed"))
+    with pytest.raises(SystemExit) as error:
+        cli.main([str(CFG), flag, "--frames", "1", "--particles", "4"])
+    assert error.value.code == 2
+    assert message in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("flag", ["--cuda", "--wgpu"])
+def test_cli_backend_support_message_lists_particle_lenia_and_hybrid(tmp_path, capsys, flag):
+    config = tmp_path / "pps.toml"
+    config.write_text(CFG.read_text().replace('["particle_lenia"]', '["pps"]'))
+    with pytest.raises(SystemExit) as error:
+        main([str(config), flag])
+    assert error.value.code == 2
+    message = capsys.readouterr().err
+    assert "Particle Lenia" in message
+    assert "Mohr/Field Life hybrid" in message

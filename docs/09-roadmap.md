@@ -48,7 +48,6 @@ the roadmap box until those commands pass.
 
 | ID | Title | Priority | Hardware | Depends on |
 |---|---|---|---|---|
-| R-03 | CLI backend-availability consistency | P2 | cpu | — |
 | R-04 | MaCE input-shape ambiguity | P2 | cpu | — |
 | R-05 | Canonical Orbium for Lenia (M3 exit) | P1 | cpu | — |
 | R-06 | State hash and `io.hash_every` | P1 | cpu | — |
@@ -69,21 +68,6 @@ CPU CI runs on every pull request (`.github/workflows/ci.yml`), so a
 parallel; they touch different files.
 
 ## Open work
-
-### R-03 — CLI backend-availability consistency
-
-- **Why:** in `ece/__main__.py`, `--cuda`/`--wgpu` for Particle Lenia
-  skip the `cuda_available()`/`webgpu_available()` checks every other
-  rule has, so users get a raw exception instead of a clean error. Some
-  `parser.error` messages also omit Particle Lenia from the supported
-  list.
-- **Files:** `ece/__main__.py`, `tests/test_particle_lenia.py`.
-- **Done when:** every backend flag on every rule gives a
-  `parser.error` (exit code 2) naming the missing extra when the device
-  is absent, and the messages list all supported rules.
-- **Verify:** CPU tests that run the CLI with `--cuda` and `--wgpu` on
-  `configs/particle_lenia.toml` and expect `SystemExit(2)` when no device
-  is present (mark them to skip when a device *is* present).
 
 ### R-04 — MaCE input-shape ambiguity
 
@@ -328,6 +312,7 @@ parallel; they touch different files.
 
 ### M0 — corrected kernels
 
+- [x] CLI backend-availability consistency (R-03): Particle Lenia rejects unavailable CUDA/WebGPU with exit code 2; backend support messages list all current families; 8 Particle Lenia CPU tests pass on Python 3.12
 - [x] Schema/loader drift guard, strict integer seed and species count, ring-only field kernel (R-02); 31 config tests pass on CPU / Python 3.12
 - [x] Corrected Mohr tent (no extra `r_max`)
 - [x] Exponential friction
